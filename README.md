@@ -1,6 +1,6 @@
 # caelestia-zeti
 
-Per-monitor wallpapers and colours for [Caelestia](https://github.com/caelestia-dots/shell), plus a lock screen settings page.
+Per-monitor wallpapers, video wallpapers and per-monitor colours for [Caelestia](https://github.com/caelestia-dots/shell), plus a lock screen settings page.
 
 ## What it does
 
@@ -9,6 +9,22 @@ Per-monitor wallpapers and colours for [Caelestia](https://github.com/caelestia-
 **Each monitor gets its own colours.** A monitor's wallpaper decides the colours of the bar, drawers, launcher, settings and lock screen *on that monitor*. Monitors without their own wallpaper use the normal shared colours.
 
 **The launcher only affects the screen it's open on.** Browsing wallpapers previews them on that screen only — the others stay as they are. Picking one applies it there.
+
+**Video wallpapers.** Use a video as your wallpaper — `mp4`, `mkv`, `webm`, `mov`, `m4v` or `avi`. They appear in the wallpaper picker alongside images, and colours are pulled from them the same way. Each monitor can run a different video, or you can mix a video on one screen with a still image on another.
+
+To keep them cheap, playback pauses while windows cover the wallpaper and while the screen is locked or off, and audio is muted. Change that in `~/.config/caelestia/live-wallpaper.json`:
+
+```json
+{
+  "enabled": true,
+  "muted": true,
+  "pauseWhenObscured": true,
+  "pauseWhenHidden": true,
+  "playbackRate": 1
+}
+```
+
+Set `enabled` to `false` to freeze videos on a single frame — you keep the look without the decoding cost.
 
 **Panels fit whatever monitor they're on.** Ultrawide, portrait, small laptop screens — the bar, launcher, dashboard and lock screen size themselves to fit instead of overflowing or looking lost. On a normal 1080p screen nothing changes.
 
@@ -64,4 +80,4 @@ This puts everything back the way it was.
 
 ## Licence
 
-GPL-3.0, same as Caelestia.
+MIT.
