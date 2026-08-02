@@ -9,7 +9,7 @@
 set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-BACKUP_ROOT="${XDG_STATE_HOME:-$HOME/.local/state}/caelestia-multimonitor/backups"
+BACKUP_ROOT="${XDG_STATE_HOME:-$HOME/.local/state}/caelestia-zeti/backups"
 
 DRY_RUN=0
 UNINSTALL=0

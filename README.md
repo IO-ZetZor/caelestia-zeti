@@ -1,4 +1,4 @@
-# caelestia-multimonitor
+# caelestia-zeti
 
 Per-monitor wallpapers and colours for [Caelestia](https://github.com/caelestia-dots/shell), plus a lock screen settings page.
 
@@ -29,8 +29,8 @@ Built against caelestia-shell 2.2.0 and caelestia-cli 1.1.2.
 ## Install
 
 ```sh
-git clone https://github.com/<you>/caelestia-multimonitor
-cd caelestia-multimonitor
+git clone https://github.com/IO-ZetZor/caelestia-zeti
+cd caelestia-zeti
 ./install.sh
 ```
 
@@ -46,7 +46,7 @@ To see what it would change without changing anything:
 ./install.sh --dry-run
 ```
 
-Your existing setup is backed up first, to `~/.local/state/caelestia-multimonitor/backups/`. Running the installer twice is harmless.
+Your existing setup is backed up first, to `~/.local/state/caelestia-zeti/backups/`. Running the installer twice is harmless.
 
 If it can't find your Caelestia install, point it at the right place:
 
