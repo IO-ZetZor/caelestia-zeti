@@ -105,9 +105,9 @@ PageBase {
         NavRow {
             first: true
             icon: "clear_night"
-            label: qsTr("No-notifications image")
+            text: qsTr("No-notifications image")
 
-            status: {
+            subtext: {
                 const pic = Config.paths.lockNoNotifsPic;
                 return pic ? Paths.shortenHome(pic) : qsTr("Default");
             }
@@ -124,8 +124,8 @@ PageBase {
 
         NavRow {
             icon: "restart_alt"
-            label: qsTr("Reset image")
-            status: qsTr("Use the built-in default")
+            text: qsTr("Reset image")
+            subtext: qsTr("Use the built-in default")
             visible: !!Config.paths.lockNoNotifsPic
             onClicked: GlobalConfig.paths.lockNoNotifsPic = ""
         }
@@ -134,9 +134,9 @@ PageBase {
             id: lockNoteRow
             last: !root._noteEditing
             icon: "edit_note"
-            label: qsTr("Lock note")
+            text: qsTr("Lock note")
 
-            status: {
+            subtext: {
                 const note = root._lsc?.lockNote ?? "";
                 if (!note.trim())
                     return qsTr("Not set");

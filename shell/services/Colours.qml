@@ -4,8 +4,8 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import Caelestia
 import Caelestia.Config
+import Caelestia.Images
 import qs.services
 import qs.utils
 
@@ -179,25 +179,19 @@ Singleton {
         }
     }
 
+    // Pure read: this is called from bindings, so it must never write
+    // _monitorColourCache (doing so re-triggers every binding that reads it,
+    // an endless binding loop). The cache is filled in _setMonitorData.
     function forMonitor(name: string): var {
         if (!name)
             return null;
+        return _monitorColourCache[name] ?? null;
+    }
 
-        const cached = _monitorColourCache[name];
-        if (cached)
-            return cached;
-
-        const data = _monitorColourData[name];
-        if (!data?.colours)
-            return null;
-
+    function _buildPalette(colours: var): var {
         const pal = {};
-        for (const [k, v] of Object.entries(data.colours))
+        for (const [k, v] of Object.entries(colours))
             pal[k.startsWith("term") ? k : `m3${k}`] = `#${v}`;
-
-        const cacheNext = Object.assign({}, _monitorColourCache);
-        cacheNext[name] = pal;
-        _monitorColourCache = cacheNext;
         return pal;
     }
 
@@ -218,7 +212,10 @@ Singleton {
             _monitorColourData = next;
 
             const cacheNext = Object.assign({}, _monitorColourCache);
-            delete cacheNext[name];
+            if (parsed?.colours)
+                cacheNext[name] = _buildPalette(parsed.colours);
+            else
+                delete cacheNext[name];
             _monitorColourCache = cacheNext;
         } catch (e) {
             console.warn("Colours: invalid per-monitor scheme for", name);
@@ -253,11 +250,20 @@ Singleton {
                     root._clearMonitorData(modelData.name);
                     if (!schemeView.__touched) {
                         schemeView.__touched = true;
-                        Quickshell.execDetached(["sh", "-c", `mkdir -p "$(dirname "$1")" && touch "$1"`, "sh", schemeView.path]);
+                        schemeViewTouch.running = true;
                     }
                 }
 
                 property bool __touched
+            }
+
+            // Create the file, then reload so the watcher attaches. Without the reload a
+            // file created after startup (e.g. no monitors/ dir yet) is never watched.
+            Process {
+                id: schemeViewTouch
+
+                command: ["sh", "-c", `mkdir -p "$(dirname "$1")" && touch "$1"`, "sh", schemeView.path]
+                onExited: schemeView.reload()
             }
         }
     }
@@ -324,7 +330,8 @@ Singleton {
         }
 
         function _sync(): void {
-            if (!hasOwn)
+            // Check data itself: onDataChanged can run before hasOwn re-evaluates
+            if (!data?.colours)
                 return;
             for (const [name, colour] of Object.entries(data.colours)) {
                 const prop = name.startsWith("term") ? name : `m3${name}`;

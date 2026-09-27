@@ -4,11 +4,13 @@ import QtQuick
 import QtQuick.Layouts
 import M3Shapes
 import Caelestia.Config
+import Caelestia.I18n
 import Caelestia.Services
 import qs.components
 import qs.components.effects
 import qs.components.widgets
 import qs.services
+import qs.utils
 
 StyledRect {
     id: root
@@ -48,7 +50,7 @@ StyledRect {
             id: cpu
 
             icon: "memory"
-            value: Math.round(Cpu.percentage * 100) + "%"
+            value: Strings.percentOne(Cpu.percentage)
             fillValue: Cpu.percentage
             colour: root._cn?.m3primary ?? Colours.p(Tokens.screen).m3primary
             shapeColour: root._cn?.m3primaryContainer ?? Colours.p(Tokens.screen).m3primaryContainer
@@ -76,11 +78,7 @@ StyledRect {
                     anchors.centerIn: parent
                     anchors.verticalCenterOffset: Math.round(fontInfo.pointSize * 0.04)
 
-                    text: {
-                        const temp = Cpu.temperature;
-                        const useF = GlobalConfig.services.useFahrenheitPerformance;
-                        return `${Math.ceil(useF ? temp * 1.8 + 32 : temp)}°${useF ? "F" : "C"}`;
-                    }
+                    text: Units.formatSensorTemp(Cpu.temperature)
                     color: Cpu.temperature > 90 ? (root._cn?.m3onErrorContainer ?? Colours.p(Tokens.screen).m3onErrorContainer) : (root._cn?.m3secondary ?? Colours.p(Tokens.screen).m3secondary)
                     font: Tokens.font.title.builders.medium.scale(cpu.width / 112).width(50).build()
                 }
@@ -89,7 +87,7 @@ StyledRect {
 
         Resource {
             icon: "memory_alt"
-            value: Math.round(Memory.percentage * 100) + "%"
+            value: Strings.percentOne(Memory.percentage)
             fillValue: Memory.percentage
             colour: root._cn?.m3tertiary ?? Colours.p(Tokens.screen).m3tertiary
             shapeColour: root._cn?.m3onTertiary ?? Colours.p(Tokens.screen).m3onTertiary
@@ -99,7 +97,7 @@ StyledRect {
 
         Resource {
             icon: "hard_disk"
-            value: Math.round(Storage.percentage * 100) + "%"
+            value: Strings.percentOne(Storage.percentage)
             fillValue: Storage.percentage
             colour: root._cn?.m3secondary ?? Colours.p(Tokens.screen).m3secondary
             shapeColour: root._cn?.m3secondaryContainer ?? Colours.p(Tokens.screen).m3secondaryContainer

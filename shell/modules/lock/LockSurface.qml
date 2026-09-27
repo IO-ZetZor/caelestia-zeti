@@ -5,7 +5,9 @@ import QtQuick.Effects
 import Quickshell.Wayland
 import Caelestia.Config
 import qs.components
+import qs.components.images
 import qs.services
+import qs.utils
 
 WlSessionLockSurface {
     id: root
@@ -16,6 +18,8 @@ WlSessionLockSurface {
     readonly property alias unlocking: unlockAnim.running
 
     readonly property string _screenName: screen?.name ?? ""
+    // This monitor's own wallpaper; videos can't be drawn as a still, so they use screencopy
+    readonly property string _wallpaper: Wallpapers.forMonitor(_screenName)
 
     contentItem.Config.screen: _screenName
     contentItem.Tokens.screen: _screenName
@@ -156,11 +160,10 @@ WlSessionLockSurface {
         }
     }
 
-    ScreencopyView {
+    Item {
         id: background
 
         anchors.fill: parent
-        captureSource: root.screen
         opacity: 0
 
         layer.enabled: true
@@ -170,6 +173,27 @@ WlSessionLockSurface {
             blur: 1
             blurMax: 64
             blurMultiplier: 1
+        }
+
+        Loader {
+            anchors.fill: parent
+            sourceComponent: Config.lock.useWallpaper && !Images.isValidVideoByName(root._wallpaper) ? wallpaperBackground : screencopyBackground
+        }
+    }
+
+    Component {
+        id: screencopyBackground
+
+        ScreencopyView {
+            captureSource: root.screen
+        }
+    }
+
+    Component {
+        id: wallpaperBackground
+
+        CachingImage {
+            path: root._wallpaper
         }
     }
 
@@ -231,8 +255,11 @@ WlSessionLockSurface {
         Content {
             id: content
 
-            anchors.fill: parent
-            anchors.margins: Tokens.padding.extraLargeIncreased
+            // Fixed size (not anchors.fill): the unlock animation shrinks lockContent
+            // to icon size, and squeezing the layouts down with it spins forever.
+            anchors.centerIn: parent
+            width: lockContent.finalW - Tokens.padding.extraLargeIncreased
+            height: lockContent.finalH - Tokens.padding.extraLargeIncreased
 
             lock: root
             monitorName: root._screenName
