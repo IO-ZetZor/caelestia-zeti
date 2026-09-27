@@ -255,8 +255,11 @@ WlSessionLockSurface {
         Content {
             id: content
 
-            anchors.fill: parent
-            anchors.margins: Tokens.padding.extraLargeIncreased
+            // Fixed size (not anchors.fill): the unlock animation shrinks lockContent
+            // to icon size, and squeezing the layouts down with it spins forever.
+            anchors.centerIn: parent
+            width: lockContent.finalW - Tokens.padding.extraLargeIncreased
+            height: lockContent.finalH - Tokens.padding.extraLargeIncreased
 
             lock: root
             monitorName: root._screenName
