@@ -240,4 +240,15 @@ Item {
             }
         }
     }
+
+    CustomMouseArea {
+        function onWheel(event: WheelEvent): void {
+            if (event.angleDelta.y > 0)
+                root.decrementCurrentIndex();
+            else if (event.angleDelta.y < 0)
+                root.incrementCurrentIndex();
+        }
+
+        anchors.fill: parent
+    }
 }

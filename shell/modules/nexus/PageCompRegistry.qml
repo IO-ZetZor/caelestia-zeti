@@ -3,6 +3,7 @@ pragma Singleton
 import QtQuick
 import QtQuick.Layouts
 import Caelestia.Config
+import Caelestia.I18n
 import qs.components
 import qs.services
 import qs.modules.nexus.common
@@ -53,6 +54,15 @@ QtObject {
                 }
                 Component {
                     NetworkDetailPage {}
+                }
+                Component {
+                    AddVpnPage {}
+                }
+                Component {
+                    AllNetworksPage {}
+                }
+                Component {
+                    SavedNetworksPage {}
                 }
             }
         },
@@ -108,7 +118,7 @@ QtObject {
                     SidebarPanel {}
                 }
                 Component {
-                    LockScreenPanel {}
+                    UtilitiesPanel {}
                 }
 
                 Component {
@@ -125,6 +135,10 @@ QtObject {
                 }
                 Component {
                     BarClock {}
+                }
+                // Lock screen (caelestia-zeti); appended so taskbar sub-page indices stay 6-10
+                Component {
+                    LockScreenPanel {}
                 }
             }
         },
@@ -191,14 +205,14 @@ QtObject {
 
             StyledText {
                 Layout.alignment: Qt.AlignHCenter
-                text: qsTr("Page under construction")
+                text: Tr.tr("Page under construction")
                 color: Colours.p(Tokens.screen).m3outlineVariant
                 font: Tokens.font.title.large
             }
 
             StyledText {
                 Layout.alignment: Qt.AlignHCenter
-                text: qsTr("This page will be available in a future update.")
+                text: Tr.tr("This page will be available in a future update.")
                 color: Colours.p(Tokens.screen).m3outlineVariant
                 font: Tokens.font.body.large
             }

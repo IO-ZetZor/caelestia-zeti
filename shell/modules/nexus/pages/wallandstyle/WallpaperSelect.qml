@@ -5,6 +5,7 @@ import QtQuick.Layouts
 import Quickshell
 import Caelestia.Components
 import Caelestia.Config
+import Caelestia.I18n
 import Caelestia.Models
 import qs.components
 import qs.components.controls
@@ -16,7 +17,7 @@ import qs.modules.nexus.common
 PageBase {
     id: root
 
-    title: qsTr("Wallpapers")
+    title: Tr.tr("Wallpapers")
     isSubPage: true
 
     property string targetMonitor: ""
@@ -50,7 +51,7 @@ PageBase {
             IconTextButton {
                 id: browseBtn
                 icon: "photo_library"
-                text: qsTr("Browse")
+                text: Tr.tr("Browse")
                 font: Tokens.font.body.large
                 isRound: true
                 shapeMorph: true
@@ -60,8 +61,8 @@ PageBase {
 
                 FileDialog {
                     id: browseDialog
-                    title: qsTr("Select a wallpaper")
-                    filterLabel: qsTr("Image and video files")
+                    title: Tr.tr("Select a wallpaper")
+                    filterLabel: Tr.tr("Image and video files")
                     filters: Images.validWallpaperExtensions
                     onAccepted: path => root._apply(path)
                 }
@@ -70,7 +71,7 @@ PageBase {
             IconTextButton {
                 id: randomBtn
                 icon: "shuffle"
-                text: qsTr("Random")
+                text: Tr.tr("Random")
                 font: Tokens.font.body.large
                 isRound: true
                 shapeMorph: true
@@ -116,7 +117,7 @@ PageBase {
             imgHeight: Math.round(width * 0.3)
             radius: Tokens.rounding.extraLarge
             path: featuredPath
-            text: qsTr("Featured wallpaper")
+            text: Tr.tr("Featured wallpaper")
             fillLabel: false
             onClicked: root._apply(featuredWall.featuredPath)
         }
@@ -171,7 +172,7 @@ PageBase {
 
         StyledText {
             Layout.topMargin: Tokens.spacing.large
-            text: qsTr("Local wallpapers")
+            text: Tr.tr("Local wallpapers")
             font: Tokens.font.title.small
         }
 
@@ -267,7 +268,7 @@ PageBase {
 
                     StyledText {
                         Layout.alignment: Qt.AlignHCenter
-                        text: qsTr("No local wallpapers found")
+                        text: Tr.tr("No local wallpapers found")
                         color: Colours.p(Tokens.screen).m3outline
                         font: Tokens.font.title.small
                     }

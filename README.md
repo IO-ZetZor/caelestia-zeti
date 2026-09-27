@@ -40,7 +40,7 @@ Regular apps — your terminal, GTK and Qt apps, Discord, browsers — still all
 - `python3`
 - `ffmpeg`, if you want video wallpapers
 
-Built against caelestia-shell 2.2.0 and caelestia-cli 1.1.2.
+Built against caelestia-shell 2.5.0 and caelestia-cli 1.1.3.
 
 ## Install
 
