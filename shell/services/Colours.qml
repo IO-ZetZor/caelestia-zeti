@@ -179,25 +179,19 @@ Singleton {
         }
     }
 
+    // Pure read: this is called from bindings, so it must never write
+    // _monitorColourCache (doing so re-triggers every binding that reads it,
+    // an endless binding loop). The cache is filled in _setMonitorData.
     function forMonitor(name: string): var {
         if (!name)
             return null;
+        return _monitorColourCache[name] ?? null;
+    }
 
-        const cached = _monitorColourCache[name];
-        if (cached)
-            return cached;
-
-        const data = _monitorColourData[name];
-        if (!data?.colours)
-            return null;
-
+    function _buildPalette(colours: var): var {
         const pal = {};
-        for (const [k, v] of Object.entries(data.colours))
+        for (const [k, v] of Object.entries(colours))
             pal[k.startsWith("term") ? k : `m3${k}`] = `#${v}`;
-
-        const cacheNext = Object.assign({}, _monitorColourCache);
-        cacheNext[name] = pal;
-        _monitorColourCache = cacheNext;
         return pal;
     }
 
@@ -218,7 +212,10 @@ Singleton {
             _monitorColourData = next;
 
             const cacheNext = Object.assign({}, _monitorColourCache);
-            delete cacheNext[name];
+            if (parsed?.colours)
+                cacheNext[name] = _buildPalette(parsed.colours);
+            else
+                delete cacheNext[name];
             _monitorColourCache = cacheNext;
         } catch (e) {
             console.warn("Colours: invalid per-monitor scheme for", name);
