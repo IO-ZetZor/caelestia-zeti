@@ -330,7 +330,8 @@ Singleton {
         }
 
         function _sync(): void {
-            if (!hasOwn)
+            // Check data itself: onDataChanged can run before hasOwn re-evaluates
+            if (!data?.colours)
                 return;
             for (const [name, colour] of Object.entries(data.colours)) {
                 const prop = name.startsWith("term") ? name : `m3${name}`;
