@@ -184,11 +184,20 @@ Searcher {
 
                     if (!monitorView.__touched) {
                         monitorView.__touched = true;
-                        Quickshell.execDetached(["sh", "-c", `mkdir -p "$(dirname "$1")" && touch "$1"`, "sh", monitorView.path]);
+                        monitorViewTouch.running = true;
                     }
                 }
 
                 property bool __touched
+            }
+
+            // Create the file, then reload so the watcher attaches. Without the reload a
+            // file created after startup (e.g. no monitors/ dir yet) is never watched.
+            Process {
+                id: monitorViewTouch
+
+                command: ["sh", "-c", `mkdir -p "$(dirname "$1")" && touch "$1"`, "sh", monitorView.path]
+                onExited: monitorView.reload()
             }
         }
     }

@@ -250,11 +250,20 @@ Singleton {
                     root._clearMonitorData(modelData.name);
                     if (!schemeView.__touched) {
                         schemeView.__touched = true;
-                        Quickshell.execDetached(["sh", "-c", `mkdir -p "$(dirname "$1")" && touch "$1"`, "sh", schemeView.path]);
+                        schemeViewTouch.running = true;
                     }
                 }
 
                 property bool __touched
+            }
+
+            // Create the file, then reload so the watcher attaches. Without the reload a
+            // file created after startup (e.g. no monitors/ dir yet) is never watched.
+            Process {
+                id: schemeViewTouch
+
+                command: ["sh", "-c", `mkdir -p "$(dirname "$1")" && touch "$1"`, "sh", schemeView.path]
+                onExited: schemeView.reload()
             }
         }
     }
