@@ -23,6 +23,10 @@ Searcher {
     property bool previewColourLock
     property bool pendingPreviewClear
 
+    // Monitor currently selected in the Nexus wallpaper page. The category page
+    // is a separate StackView item, so carry the selection across.
+    property string pickerMonitor
+
     property var monitorPaths: ({})
 
     function monitorFileName(name: string): string {
@@ -49,9 +53,13 @@ Searcher {
     }
 
     function setWallpaperFor(name: string, path: string): void {
-
         if (!name) {
             setWallpaper(path);
+            return;
+        }
+
+        if (!path) {
+            clearMonitorWallpaper(name);
             return;
         }
 
@@ -93,6 +101,8 @@ Searcher {
     }
 
     function setWallpaper(path: string): void {
+        if (!path)
+            return;
 
         for (const name of Object.keys(monitorPaths))
             Colours._clearMonitorData(name);
@@ -102,6 +112,7 @@ Searcher {
     }
 
     function preview(screen: string, path: string): void {
+        pendingPreviewClear = false;
         previewScreen = screen || "";
         previewPath = path;
 
@@ -113,15 +124,19 @@ Searcher {
 
     function stopPreview(): void {
         previewScreen = "";
-        if (previewColourLock)
+        if (previewColourLock) {
             pendingPreviewClear = true;
-        else
+        } else {
+            pendingPreviewClear = false;
             Colours.showPreview = false;
+        }
     }
 
     onPreviewColourLockChanged: {
-        if (!previewColourLock && pendingPreviewClear)
+        if (!previewColourLock && pendingPreviewClear) {
+            pendingPreviewClear = false;
             Colours.showPreview = false;
+        }
     }
 
     list: wallpapers.entries
@@ -282,8 +297,7 @@ Searcher {
         command: ["caelestia", "wallpaper", "-p", root.previewPath, ...root.smartArg]
         stdout: StdioCollector {
             onStreamFinished: {
-
-                if (!root.previewScreen)
+                if (!root.previewScreen || !text)
                     return;
                 Colours.load(text, true);
                 Colours.showPreview = true;
