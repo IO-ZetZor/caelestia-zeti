@@ -11,8 +11,12 @@ class Command:
 
     def run(self) -> None:
         monitor = getattr(self.args, "monitor", None)
-        if self.args.print:
-            print(json.dumps(get_colours_for_wall(self.args.print, self.args.no_smart)))
+        if self.args.print is not None:
+            path = self.args.print or get_wallpaper(monitor)
+            if not path:
+                print("No wallpaper set")
+                return
+            print(json.dumps(get_colours_for_wall(path, self.args.no_smart)))
         elif self.args.file:
             set_wallpaper(self.args.file, self.args.no_smart, monitor)
         elif self.args.random:
