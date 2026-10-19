@@ -8,12 +8,23 @@ import qs.components.misc
 import qs.services
 
 Scope {
+    id: root
+
     property alias lock: lock
+
+    // WlSessionLock does not emit lockStateChanged when it releases: the
+    // compositor's lock is already cleared by the time unlock() checks
+    // isLocked(). A binding to lock.locked therefore keeps its last true
+    // value, leaving ShellState.locked stuck after unlocking. Mirror the
+    // compositor's secure state through a property whose notifies we control.
+    property bool lockActive: false
 
     WlSessionLock {
         id: lock
 
         signal unlock
+
+        onSecureChanged: root.lockActive = lock.secure
 
         LockSurface {
             lock: lock
@@ -24,7 +35,7 @@ Scope {
     Binding {
         target: ShellState
         property: "locked"
-        value: lock.locked
+        value: root.lockActive
     }
 
     Pam {
