@@ -20,7 +20,6 @@ from caelestia.utils.dots.source import DotsSource
 from caelestia.utils.io import warn
 from caelestia.utils.paths import wallpapers_dir
 from caelestia.utils.scheme import get_scheme_names, scheme_variants
-from caelestia.utils.wallpaper import get_wallpaper
 
 def parse_args() -> tuple[argparse.ArgumentParser, argparse.Namespace]:
     parser = argparse.ArgumentParser(prog="caelestia", description="Main control script for the Caelestia dotfiles")
@@ -96,7 +95,7 @@ def parse_args() -> tuple[argparse.ArgumentParser, argparse.Namespace]:
     wallpaper_parser = command_parser.add_parser("wallpaper", help="manage the wallpaper")
     wallpaper_parser.set_defaults(cls=wallpaper.Command)
     wallpaper_parser.add_argument(
-        "-p", "--print", nargs="?", const=get_wallpaper(), metavar="PATH", help="print the scheme for a wallpaper"
+        "-p", "--print", nargs="?", const="", metavar="PATH", help="print the scheme for a wallpaper"
     )
     wallpaper_parser.add_argument(
         "-r", "--random", nargs="?", const=wallpapers_dir, metavar="DIR", help="switch to a random wallpaper"
@@ -112,6 +111,7 @@ def parse_args() -> tuple[argparse.ArgumentParser, argparse.Namespace]:
     wallpaper_parser.add_argument(
         "-t",
         "--threshold",
+        type=float,
         default=0.8,
         help="the minimum percentage of the largest monitor size the image must be greater than to be selected",
     )
