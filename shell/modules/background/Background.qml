@@ -19,7 +19,11 @@ Variants {
         screen: modelData
         name: "background"
         WlrLayershell.exclusionMode: ExclusionMode.Ignore
-        WlrLayershell.layer: contentItem.Config.background.wallpaperEnabled ? WlrLayer.Background : WlrLayer.Bottom
+        // Hyprland 0.56.x does not composite Background-layer surfaces on an
+        // unfocused monitor when a fullscreen window is present, so the wallpaper
+        // disappears behind transparent windows when the cursor leaves the
+        // monitor. The Bottom layer is not affected.
+        WlrLayershell.layer: WlrLayer.Bottom
         color: contentItem.Config.background.wallpaperEnabled ? "black" : "transparent"
         surfaceFormat.opaque: false
 
