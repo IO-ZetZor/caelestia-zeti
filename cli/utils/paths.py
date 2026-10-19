@@ -40,15 +40,17 @@ wallpaper_thumbnail_path: Path = c_state_dir / "wallpaper/thumbnail.jpg"
 wallpapers_cache_dir: Path = c_cache_dir / "wallpapers"
 wallpaper_monitors_dir: Path = c_state_dir / "wallpaper/monitors"
 
+def _monitor_slug(monitor: str) -> str:
+    # Keep this in sync with Wallpapers.monitorFileName() in the shell.
+    return "".join(c if c.isascii() and (c.isalnum() or c in "-_.") else "_" for c in monitor)
+
 def wallpaper_monitor_path(monitor: str) -> Path:
     """State file holding the wallpaper path for a specific monitor."""
-    safe = "".join(c if c.isalnum() or c in "-_." else "_" for c in monitor)
-    return wallpaper_monitors_dir / f"{safe}.txt"
+    return wallpaper_monitors_dir / f"{_monitor_slug(monitor)}.txt"
 
 def wallpaper_monitor_scheme_path(monitor: str) -> Path:
     """State file holding the colour scheme for a specific monitor wall."""
-    safe = "".join(c if c.isalnum() or c in "-_." else "_" for c in monitor)
-    return wallpaper_monitors_dir / f"{safe}-scheme.json"
+    return wallpaper_monitors_dir / f"{_monitor_slug(monitor)}-scheme.json"
 
 def truncate(path: Path) -> None:
     """Empty a state file without unlinking it.
