@@ -23,7 +23,7 @@ Singleton {
     readonly property M3Palette current: M3Palette {}
     readonly property M3Palette preview: M3Palette {}
     readonly property Transparency transparency: Transparency {}
-    readonly property alias wallLuminance: analyser.luminance
+    readonly property real wallLuminance: LiveWallpaper.isVideo(Wallpapers.current) ? 0 : analyser.luminance
 
     property bool cooldownPending
     property real lastBaseTransparency
@@ -42,7 +42,7 @@ Singleton {
         const luminance = getLuminance(c);
 
         const offset = (!isLight || layer == 1 ? 1 : -layer / 2) * (isLight ? 0.2 : 0.3) * (1 - baseFor(isLight)) * (1 + lum * (isLight ? (layer == 1 ? 3 : 1) : 2.5));
-        const scale = (luminance + offset) / luminance;
+        const scale = luminance > 0 ? (luminance + offset) / luminance : 1;
         const r = Math.max(0, Math.min(1, c.r * scale));
         const g = Math.max(0, Math.min(1, c.g * scale));
         const b = Math.max(0, Math.min(1, c.b * scale));
@@ -278,7 +278,7 @@ Singleton {
     ImageAnalyser {
         id: analyser
 
-        source: Wallpapers.current
+        source: LiveWallpaper.isVideo(Wallpapers.current) ? "" : Wallpapers.current
     }
 
     Timer {
@@ -315,10 +315,11 @@ Singleton {
         readonly property M3Palette palette: isPreview ? root.preview : hasOwn ? own : root.current
         readonly property bool isLight: isPreview ? root.previewLight : hasOwn ? data.mode === "light" : root.currentLight
 
-        readonly property real lum: analyser.luminance
+        readonly property string wallpaperPath: Wallpapers.forMonitor(sc.screen)
+        readonly property real lum: LiveWallpaper.isVideo(sc.wallpaperPath) ? 0 : analyser.luminance
 
         readonly property ImageAnalyser analyser: ImageAnalyser {
-            source: Wallpapers.forMonitor(sc.screen)
+            source: LiveWallpaper.isVideo(sc.wallpaperPath) ? "" : sc.wallpaperPath
         }
 
         readonly property M3Palette own: M3Palette {}
