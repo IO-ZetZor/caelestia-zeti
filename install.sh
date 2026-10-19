@@ -4,7 +4,7 @@
 #
 #   ./install.sh                 install (auto-detects paths)
 #   ./install.sh --dry-run       show what would change, write nothing
-#   ./install.sh --uninstall     restore the most recent backup
+#   ./install.sh --uninstall     restore the pre-install backup
 #
 set -euo pipefail
 
@@ -15,6 +15,8 @@ DRY_RUN=0
 UNINSTALL=0
 SHELL_DIR=""
 CLI_DIR=""
+BACKUP=""
+ACTIVE_MARKER="$BACKUP_ROOT/.active"
 
 die() { printf '\033[31merror:\033[0m %s\n' "$*" >&2; exit 1; }
 info() { printf '\033[36m::\033[0m %s\n' "$*"; }
@@ -29,7 +31,7 @@ Options:
   --shell-dir DIR   Caelestia shell root (the directory holding shell.qml)
   --cli-dir DIR     caelestia Python package root
   -n, --dry-run     Report intended changes without writing
-  -u, --uninstall   Restore the most recent backup
+  -u, --uninstall   Restore the pre-install backup
   -h, --help        Show this help
 EOF
 }
@@ -83,6 +85,16 @@ PY
 [[ -n "$CLI_DIR" ]] || CLI_DIR=$(detect_cli_dir) \
     || warn "caelestia CLI not found; skipping CLI patch (pass --cli-dir to include it)"
 
+if [[ -n "$CLI_DIR" ]]; then
+    [[ -d "$CLI_DIR" ]] \
+        || die "CLI directory does not exist: $CLI_DIR"
+    [[ -f "$CLI_DIR/__init__.py" ]] \
+        || die "$CLI_DIR does not look like the caelestia Python package (missing __init__.py)"
+    if [[ -f "$CLI_DIR/subcommands/shell.py" ]] && ! grep -q "restart" "$CLI_DIR/subcommands/shell.py"; then
+        warn "the CLI at $CLI_DIR predates caelestia-cli 1.1.3; 'caelestia shell -r' will not work"
+    fi
+fi
+
 # Writing into a root-owned tree (a packaged install) needs sudo.
 SUDO=""
 if [[ ! -w "$SHELL_DIR" ]]; then
@@ -101,8 +113,13 @@ fi
 
 if [[ $UNINSTALL -eq 1 ]]; then
     [[ -d "$BACKUP_ROOT" ]] || die "no backups found under $BACKUP_ROOT"
-    latest=$(find "$BACKUP_ROOT" -maxdepth 1 -mindepth 1 -type d | sort | tail -1)
-    [[ -n "$latest" ]] || die "no backups found under $BACKUP_ROOT"
+    if [[ -f "$ACTIVE_MARKER" ]]; then
+        latest=$(cat "$ACTIVE_MARKER")
+        [[ -d "$latest" ]] || die "active backup is missing: $latest"
+    else
+        latest=$(find "$BACKUP_ROOT" -maxdepth 1 -mindepth 1 -type d | sort | tail -1)
+        [[ -n "$latest" ]] || die "no backups found under $BACKUP_ROOT"
+    fi
 
     info "restoring from $latest"
     if [[ $DRY_RUN -eq 1 ]]; then
@@ -113,15 +130,16 @@ if [[ $UNINSTALL -eq 1 ]]; then
     # touched files this repo never ships, and files added since the backup
     # (LockScreenPanel.qml and friends) must not survive an uninstall.
     if [[ -d "$latest/shell" ]]; then
-        $SUDO rm -rf "${SHELL_DIR:?}"/*
+        $SUDO find -H "${SHELL_DIR:?}" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
         $SUDO cp -a "$latest/shell/." "$SHELL_DIR/"
     fi
     if [[ -d "$latest/cli" && -n "$CLI_DIR" ]]; then
-        $CLI_SUDO rm -rf "${CLI_DIR:?}"/*
+        $CLI_SUDO find -H "${CLI_DIR:?}" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
         $CLI_SUDO cp -a "$latest/cli/." "$CLI_DIR/"
         $CLI_SUDO find "$CLI_DIR" -name __pycache__ -type d -exec rm -rf {} + 2>/dev/null || true
     fi
     ok "restored. Restart the shell:  qs -c caelestia kill && caelestia shell &"
+    rm -f "$ACTIVE_MARKER"
     exit 0
 fi
 
@@ -147,16 +165,30 @@ fi
 
 # ── Backup ───────────────────────────────────────────────────────────────────
 
-STAMP=$(date +%Y%m%d-%H%M%S)
-BACKUP="$BACKUP_ROOT/$STAMP"
-mkdir -p "$BACKUP/shell"
-info "backing up to $BACKUP"
-cp -a "$SHELL_DIR/." "$BACKUP/shell/"
-if [[ -n "$CLI_DIR" ]]; then
-    mkdir -p "$BACKUP/cli"
-    cp -a "$CLI_DIR/." "$BACKUP/cli/"
+if [[ -f "$ACTIVE_MARKER" ]]; then
+    BACKUP=$(cat "$ACTIVE_MARKER")
+    if [[ -d "$BACKUP/shell" ]]; then
+        info "reusing original backup at $BACKUP"
+    else
+        warn "active backup marker points to a missing backup; creating a new one"
+        BACKUP=""
+        rm -f "$ACTIVE_MARKER"
+    fi
 fi
-ok "backup complete"
+
+if [[ -z "$BACKUP" ]]; then
+    STAMP=$(date +%Y%m%d-%H%M%S)
+    BACKUP="$BACKUP_ROOT/$STAMP"
+    mkdir -p "$BACKUP/shell"
+    info "backing up to $BACKUP"
+    cp -a "$SHELL_DIR/." "$BACKUP/shell/"
+    if [[ -n "$CLI_DIR" ]]; then
+        mkdir -p "$BACKUP/cli"
+        cp -a "$CLI_DIR/." "$BACKUP/cli/"
+    fi
+    printf '%s\n' "$BACKUP" > "$ACTIVE_MARKER"
+    ok "backup complete"
+fi
 
 # ── Overlay the changed files ────────────────────────────────────────────────
 
