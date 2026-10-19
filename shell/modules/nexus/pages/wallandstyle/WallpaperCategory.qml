@@ -2,7 +2,6 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Layouts
-import Quickshell
 import Caelestia.Config
 import Caelestia.Models
 import qs.services
@@ -49,9 +48,8 @@ PageBase {
                 path: String(modelData?.path ?? "")
                 text: modelData?.name ?? ""
                 onClicked: {
-                    const screen = (QsWindow.window as QsWindow)?.screen;
-                    if (screen)
-                        Wallpapers.setWallpaperFor(screen.name, modelData.path);
+                    if (Wallpapers.pickerMonitor)
+                        Wallpapers.setWallpaperFor(Wallpapers.pickerMonitor, modelData.path);
                     else
                         Wallpapers.setWallpaper(modelData.path);
                     root.nState.closeSubPage();
