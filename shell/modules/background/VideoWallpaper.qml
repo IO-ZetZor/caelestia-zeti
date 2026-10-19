@@ -12,6 +12,7 @@ Item {
     required property ShellScreen screen
 
     readonly property bool ready: hasFirstFrame
+    property bool failed: false
     property bool hasFirstFrame
 
     readonly property bool obscured: {
@@ -27,7 +28,9 @@ Item {
 
     readonly property bool shouldDecode: LiveWallpaper.enabled && !obscured && !hidden
 
-    readonly property bool shouldLoad: LiveWallpaper.enabled
+    // Load even when live playback is disabled so the first frame can be shown
+    // as a still. Playback stops as soon as that frame has been decoded.
+    readonly property bool shouldLoad: root.path.length > 0
 
     readonly property bool shouldPlay: shouldLoad && (shouldDecode || !hasFirstFrame)
 
@@ -67,14 +70,17 @@ Item {
             volume: LiveWallpaper.volume
         }
 
-        onSourceChanged: root.hasFirstFrame = false
+        onSourceChanged: {
+            root.hasFirstFrame = false;
+            root.failed = false;
+        }
 
-        onMediaStatusChanged: {
+        onMediaStatusChanged: mediaStatus => {
             if (mediaStatus === MediaPlayer.LoadedMedia && root.shouldPlay)
                 play();
         }
 
-        onPositionChanged: {
+        onPositionChanged: position => {
             if (!root.hasFirstFrame && position > 0)
                 root.hasFirstFrame = true;
         }
@@ -82,6 +88,7 @@ Item {
         onErrorOccurred: (err, str) => {
             console.warn(`VideoWallpaper: failed to play ${root.path}: ${str}`);
 
+            root.failed = true;
             root.hasFirstFrame = true;
         }
     }
