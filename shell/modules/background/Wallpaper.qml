@@ -16,16 +16,17 @@ Item {
     required property ShellScreen screen
 
     property string source: Wallpapers.forMonitor(screen.name)
-    property Item current
+    property var current
 
-    property Item previous
+    property var previous
     property bool completed
     property bool initialised
 
     readonly property bool currentReady: current?.ready ?? false
+    readonly property bool currentFailed: current?.failed ?? false
     readonly property int fadeDuration: LiveWallpaper.fadeDuration > 0 ? LiveWallpaper.fadeDuration : Tokens.anim.durations.expressiveSlowEffects
 
-    function createSurface(path: string): Item {
+    function createSurface(path: string): var {
         const comp = LiveWallpaper.isVideo(path) ? videoComp : imgComp;
         return comp.createObject(root, {
             path,
@@ -94,7 +95,7 @@ Item {
         asynchronous: true
         anchors.fill: parent
 
-        active: root.completed && !root.source
+        active: root.completed && (!root.source || root.currentFailed)
 
         sourceComponent: StyledRect {
             color: Colours.p(Tokens.screen).m3surfaceContainer
@@ -132,7 +133,7 @@ Item {
                             title: Tr.tr("Select a wallpaper")
                             filterLabel: Tr.tr("Image and video files")
                             filters: Images.validWallpaperExtensions
-                            onAccepted: path => Wallpapers.setWallpaper(path)
+                            onAccepted: path => Wallpapers.setWallpaperFor(root.screen.name, path)
                         }
 
                         StateLayer {
@@ -165,6 +166,7 @@ Item {
             property ShellScreen screen
 
             readonly property bool ready: status === Image.Ready
+            readonly property bool failed: status === Image.Error
 
             anchors.fill: parent
 
