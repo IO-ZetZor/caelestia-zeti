@@ -56,13 +56,15 @@ Then restart the shell:
 qs -c caelestia kill && caelestia shell &
 ```
 
+Run the installer as your normal user. It only calls `sudo` for directories it cannot write; running the whole script with `sudo` can make it detect the system Python package instead of your user-local CLI.
+
 To see what it would change without changing anything:
 
 ```sh
 ./install.sh --dry-run
 ```
 
-Your existing setup is backed up first, to `~/.local/state/caelestia-zeti/backups/`. Running the installer twice is harmless.
+Your existing setup is backed up first, to `~/.local/state/caelestia-zeti/backups/`. Running the installer twice is harmless: the original backup is reused, so uninstalling still restores the pre-install tree.
 
 If it can't find your Caelestia install, point it at the right place:
 
