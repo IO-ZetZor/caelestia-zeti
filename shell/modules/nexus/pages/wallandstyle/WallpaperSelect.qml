@@ -24,6 +24,17 @@ PageBase {
 
     readonly property bool _isGlobal: root.targetMonitor === ""
 
+    readonly property var wallEntries: {
+        let walls = Wallpapers.list;
+        if (Wallpapers.wallpaperFilter === "static")
+            walls = walls.filter(w => !Images.isValidVideoByName(w.path));
+        else if (Wallpapers.wallpaperFilter === "live")
+            walls = walls.filter(w => Images.isValidVideoByName(w.path));
+        return walls;
+    }
+
+    readonly property bool hasWalls: wallEntries.length > 0
+
     function _apply(path: string): void {
         if (root._isGlobal)
             Wallpapers.setWallpaper(path);
@@ -135,27 +146,27 @@ PageBase {
                 ]
 
                 Item {
-                    id: pill
+                    id: filterPill
 
                     required property var modelData
 
-                    readonly property bool isActive: Wallpapers.wallpaperFilter === pill.modelData.value
+                    readonly property bool isActive: Wallpapers.wallpaperFilter === filterPill.modelData.value
 
-                    implicitWidth: pillLabel.implicitWidth + Tokens.padding.medium * 2
-                    implicitHeight: pillLabel.implicitHeight + Tokens.padding.small * 2
+                    implicitWidth: filterPillLabel.implicitWidth + Tokens.padding.medium * 2
+                    implicitHeight: filterPillLabel.implicitHeight + Tokens.padding.small * 2
 
                     StyledRect {
                         anchors.fill: parent
                         radius: Tokens.rounding.full
-                        color: pill.isActive ? Colours.p(Tokens.screen).m3primary : Colours.tp(Tokens.screen).m3surfaceContainer
+                        color: filterPill.isActive ? Colours.p(Tokens.screen).m3primary : Colours.tp(Tokens.screen).m3surfaceContainer
                         Behavior on color { CAnim {} }
                     }
 
                     StyledText {
-                        id: pillLabel
+                        id: filterPillLabel
                         anchors.centerIn: parent
-                        text: pill.modelData.label
-                        color: pill.isActive ? Colours.p(Tokens.screen).m3onPrimary : Colours.p(Tokens.screen).m3onSurfaceVariant
+                        text: filterPill.modelData.label
+                        color: filterPill.isActive ? Colours.p(Tokens.screen).m3onPrimary : Colours.p(Tokens.screen).m3onSurfaceVariant
                         font: Tokens.font.label.medium
                         renderType: Text.QtRendering
                         Behavior on color { CAnim {} }
@@ -163,8 +174,8 @@ PageBase {
 
                     StateLayer {
                         radius: Tokens.rounding.full
-                        color: pill.isActive ? Colours.p(Tokens.screen).m3onPrimary : Colours.p(Tokens.screen).m3primary
-                        onClicked: Wallpapers.wallpaperFilter = pill.modelData.value
+                        color: filterPill.isActive ? Colours.p(Tokens.screen).m3onPrimary : Colours.p(Tokens.screen).m3primary
+                        onClicked: Wallpapers.wallpaperFilter = filterPill.modelData.value
                     }
                 }
             }
@@ -179,7 +190,7 @@ PageBase {
         GridLayout {
             id: wallGrid
             Layout.fillWidth: true
-            visible: localWalls.count > 0
+            visible: root.hasWalls
 
             columns: Config.nexus.wallpapersPerRow
             rowSpacing: Tokens.spacing.medium
@@ -189,11 +200,7 @@ PageBase {
                 id: localWalls
 
                 model: {
-                    let walls = Wallpapers.list;
-                    if (Wallpapers.wallpaperFilter === "static")
-                        walls = walls.filter(w => !Images.isValidVideoByName(w.path));
-                    else if (Wallpapers.wallpaperFilter === "live")
-                        walls = walls.filter(w => Images.isValidVideoByName(w.path));
+                    let walls = root.wallEntries;
 
                     const baseDir = Paths.wallsdir;
                     const categories = {};
@@ -233,6 +240,7 @@ PageBase {
                     }
                     onClicked: {
                         if (modelData.parentDir !== Paths.wallsdir) {
+                            Wallpapers.pickerMonitor = root.targetMonitor;
                             root.nState.selectedWallpaperCategory = Wallpapers.getCategoryFor(modelData);
                             root.nState.openSubPage(2);
                         } else {
@@ -246,7 +254,7 @@ PageBase {
         Loader {
             Layout.fillWidth: true
             asynchronous: true
-            active: localWalls.count === 0
+            active: !root.hasWalls
             visible: active
 
             sourceComponent: StyledRect {
