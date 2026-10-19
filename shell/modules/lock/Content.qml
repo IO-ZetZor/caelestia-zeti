@@ -1,6 +1,5 @@
 import QtQuick
 import QtQuick.Layouts
-import Quickshell
 import Caelestia.Config
 import qs.components
 import qs.services
@@ -48,17 +47,6 @@ RowLayout {
             screenName: root.monitorName
             visible: root._lsc?.showMedia ?? true
         }
-
-        Behavior on visible {
-            SequentialAnimation {
-                Anim {
-                    property: "opacity"
-                    to: 0
-                    type: Anim.DefaultEffects
-                }
-                PropertyAction {}
-            }
-        }
     }
 
     Center {
@@ -70,7 +58,7 @@ RowLayout {
     ColumnLayout {
         Layout.fillWidth: true
         spacing: Tokens.spacing.medium
-        visible: !root.isNarrow && (root._lsc?.showResources ?? true)
+        visible: !root.isNarrow
 
         Resources {
             Layout.fillWidth: true
@@ -89,17 +77,6 @@ RowLayout {
             NotifDock {
                 lock: root.lock
                 screenName: root.monitorName
-            }
-        }
-
-        Behavior on visible {
-            SequentialAnimation {
-                Anim {
-                    property: "opacity"
-                    to: 0
-                    type: Anim.DefaultEffects
-                }
-                PropertyAction {}
             }
         }
     }
