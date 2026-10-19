@@ -26,6 +26,9 @@ Item {
 
     readonly property int itemWidth: Tokens.sizes.launcher.wallpaperWidth * 0.8 + Tokens.padding.medium * 2
 
+    readonly property string screenName: root.screenState?.modelData?.name ?? ""
+    readonly property string currentWallpaper: Wallpapers.forMonitor(root.screenName)
+
     readonly property int numItems: {
         const screen = (QsWindow.window as QsWindow)?.screen;
         if (!screen)
@@ -196,10 +199,22 @@ Item {
                     results = results.filter(w => Images.isValidVideoByName(w.path));
                 return results;
             }
-            onValuesChanged: pathView.currentIndex = search ? 0 : values.findIndex(w => w.path === Wallpapers.actualCurrent)
+            onValuesChanged: {
+                const values = scriptModel.values;
+                if (search) {
+                    pathView.currentIndex = values.length > 0 ? 0 : -1;
+                } else {
+                    const idx = values.findIndex(w => w.path === root.currentWallpaper);
+                    pathView.currentIndex = idx >= 0 ? idx : (values.length > 0 ? 0 : -1);
+                }
+            }
         }
 
-        Component.onCompleted: currentIndex = Wallpapers.list.findIndex(w => w.path === Wallpapers.actualCurrent)
+        Component.onCompleted: {
+            const values = scriptModel.values;
+            const idx = values.findIndex(w => w.path === root.currentWallpaper);
+            currentIndex = idx >= 0 ? idx : (values.length > 0 ? 0 : -1);
+        }
         Component.onDestruction: Wallpapers.stopPreview()
 
         onCurrentItemChanged: {
