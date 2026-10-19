@@ -26,10 +26,9 @@ ColumnLayout {
 
     Item {
         Layout.alignment: Qt.AlignHCenter
-        visible: root._lsc?.showDate ?? true
 
-        implicitWidth: Math.max(clock.implicitWidth, dateText.implicitWidth)
-        implicitHeight: clock.implicitHeight + Tokens.spacing.small + dateText.implicitHeight + Tokens.padding.large
+        implicitWidth: Math.max(clock.implicitWidth, dateText.visible ? dateText.implicitWidth : 0)
+        implicitHeight: clock.implicitHeight + (dateText.visible ? Tokens.spacing.small + dateText.implicitHeight : 0) + Tokens.padding.large
 
         Clock {
             id: clock
@@ -44,6 +43,7 @@ ColumnLayout {
             anchors.top: clock.bottom
             anchors.topMargin: Tokens.spacing.small
 
+            visible: root._lsc?.showDate ?? true
             text: Time.format("dddd \u2022 d MMM").toUpperCase()
             color: root._cn?.m3onSurface ?? Colours.p(Tokens.screen).m3onSurface
             font: Tokens.font.title.builders.medium.weight(Font.DemiBold).build()
@@ -130,18 +130,28 @@ ColumnLayout {
         property bool _hasRun: false
 
         onLockedChanged: {
-            if (locked && cmdCommand.length > 0) {
+            if (locked) {
                 _hasRun = false;
                 _output = "";
-                proc.running = true;
+                if (cmdCommand.length > 0)
+                    proc.running = true;
+            } else {
+                proc.running = false;
             }
+        }
+
+        Component.onCompleted: {
+            if (locked && cmdCommand.length > 0)
+                proc.running = true;
         }
 
         Process {
             id: proc
 
             command: ["sh", "-c", cmdItem.cmdCommand]
-            running: cmdItem.locked && cmdItem.cmdCommand.length > 0
+            running: false
+
+            onExited: cmdItem._hasRun = true
 
             stdout: StdioCollector {
                 onStreamFinished: {
