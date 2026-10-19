@@ -5,7 +5,7 @@ import subprocess
 import sys
 from argparse import Namespace
 from pathlib import Path
-from typing import cast
+from typing import Any, cast
 
 from materialyoucolor.hct import Hct
 from materialyoucolor.utils.color_utils import argb_from_rgb
@@ -103,7 +103,7 @@ def get_wallpaper(monitor: str | None = None) -> str | None:
         except IOError:
             pass
     try:
-        return wallpaper_path_path.read_text()
+        return wallpaper_path_path.read_text().strip()
     except IOError:
         return None
 
@@ -173,7 +173,7 @@ def get_smart_opts(wall: Path, cache: Path) -> dict:
 
     return opts
 
-def get_colours_for_wall(wall: Path | str, no_smart: bool) -> None:
+def get_colours_for_wall(wall: Path | str, no_smart: bool) -> dict[str, Any]:
     wall = Path(wall)
     scheme = get_scheme()
     cache = wallpapers_cache_dir / compute_hash(wall)
@@ -312,15 +312,15 @@ def set_random(args: Namespace) -> None:
         raise ValueError("No valid wallpapers found")
 
     monitor = getattr(args, "monitor", None)
+    last_wall = get_wallpaper(monitor)
 
-    try:
-        last_wall = get_wallpaper(monitor)
-        if last_wall:
+    if last_wall:
+        try:
             wallpapers.remove(Path(last_wall))
+        except ValueError:
+            pass
 
-        if not wallpapers:
-            raise ValueError("Only valid wallpaper is current")
-    except (FileNotFoundError, ValueError):
-        pass
+    if not wallpapers:
+        return
 
     set_wallpaper(random.choice(wallpapers), args.no_smart, monitor)
