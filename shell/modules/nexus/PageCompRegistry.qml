@@ -37,6 +37,13 @@ QtObject {
                 Component {
                     ColourSelect {}
                 }
+                // Fonts (caelestia-zeti); appended so wallpaper/colour sub-page indices stay 1-3
+                Component {
+                    FontsPage {}
+                }
+                Component {
+                    FontPickerPage {}
+                }
             }
         },
 
