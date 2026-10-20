@@ -26,6 +26,8 @@ To keep them cheap, playback pauses while windows cover the wallpaper and while 
 
 Set `enabled` to `false` to freeze videos on a single frame — you keep the look without the decoding cost.
 
+**Fonts in Settings.** Settings → Wallpaper & style → Fonts lets you pick the interface, monospace, clock and workspace fonts from everything installed on your system, and scale the shell's font size. No more editing `shell.json` by hand.
+
 **Panels fit whatever monitor they're on.** Ultrawide, portrait, small laptop screens — the bar, launcher, dashboard and lock screen size themselves to fit instead of overflowing or looking lost. On a normal 1080p screen nothing changes.
 
 **A lock screen page** in Settings → Panels → Lock Screen. Turn parts of the lock screen on and off (clock, profile picture, weather, system info, music, resources), add a note, and add commands whose output shows while locked.
